@@ -1,6 +1,10 @@
 # Build results
 bin/
 obj/
+publish/
+
+# Installer output
+ClaudeUsageWidget-Setup.exe
 
 # User-specific files
 *.user
@@ -10,6 +14,9 @@ obj/
 
 # VS Code
 .vscode/
+
+# Visual Studio
+.vs/
 
 # Rider
 .idea/
