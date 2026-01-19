@@ -1,3 +1,4 @@
+using System.Reflection;
 using ClaudeUsageWidget.Models;
 using ClaudeUsageWidget.Services;
 
@@ -62,6 +63,18 @@ public class UsagePopupForm : Form
             AutoSize = true
         };
         Controls.Add(_titleLabel);
+
+        // Version label
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        var versionLabel = new Label
+        {
+            Text = $"v{version?.Major}.{version?.Minor}.{version?.Build}",
+            Font = new Font("Segoe UI", 9),
+            ForeColor = ClaudeTextMuted,
+            Location = new Point(180, yPos + 5),
+            AutoSize = true
+        };
+        Controls.Add(versionLabel);
         yPos += 40;
 
         // Current session section
