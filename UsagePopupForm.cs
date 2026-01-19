@@ -47,7 +47,6 @@ public class UsagePopupForm : Form
         ShowInTaskbar = false;
         TopMost = true;
         BackColor = ClaudeCream;
-        Size = new Size(420, 280);
         Text = "Claude Usage";
         Padding = new Padding(20);
 
@@ -75,6 +74,24 @@ public class UsagePopupForm : Form
             AutoSize = true
         };
         Controls.Add(versionLabel);
+
+        // Settings cog icon in title area
+        _settingsButton = new Button
+        {
+            Text = "⚙",
+            Font = new Font("Segoe UI", 12),
+            Location = new Point(360, yPos - 2),
+            Size = new Size(28, 28),
+            FlatStyle = FlatStyle.Flat,
+            BackColor = ClaudeCream,
+            ForeColor = ClaudeTextMuted,
+            Cursor = Cursors.Hand
+        };
+        _settingsButton.FlatAppearance.BorderSize = 0;
+        _settingsButton.FlatAppearance.MouseOverBackColor = ClaudeProgressBg;
+        _settingsButton.Click += SettingsButton_Click;
+        Controls.Add(_settingsButton);
+
         yPos += 40;
 
         // Current session section
@@ -211,7 +228,7 @@ public class UsagePopupForm : Form
         Controls.Add(_weeklyProgress);
         yPos += 28;
 
-        // Last updated and settings
+        // Last updated label
         _lastUpdatedLabel = new Label
         {
             Text = "Last updated: --",
@@ -221,20 +238,10 @@ public class UsagePopupForm : Form
             AutoSize = true
         };
         Controls.Add(_lastUpdatedLabel);
+        yPos += 30; // Space for label + bottom padding
 
-        _settingsButton = new Button
-        {
-            Text = "Settings",
-            Font = new Font("Segoe UI", 9),
-            Location = new Point(310, yPos - 5),
-            Size = new Size(80, 28),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.White,
-            ForeColor = ClaudeTextDark
-        };
-        _settingsButton.FlatAppearance.BorderColor = ClaudeProgressBg;
-        _settingsButton.Click += SettingsButton_Click;
-        Controls.Add(_settingsButton);
+        // Set client size based on actual content
+        ClientSize = new Size(400, yPos);
 
         ResumeLayout(false);
 
@@ -327,6 +334,7 @@ public class UsagePopupForm : Form
         if (x < workingArea.Left) x = workingArea.Left;
         if (x + Width > workingArea.Right) x = workingArea.Right - Width;
         if (y < workingArea.Top) y = cursorPos.Y + 20; // Show below cursor instead
+        if (y + Height > workingArea.Bottom) y = workingArea.Bottom - Height;
 
         Location = new Point(x, y);
         Show();
