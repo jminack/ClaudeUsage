@@ -184,6 +184,7 @@ public class TrayApplicationContext : ApplicationContext
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
         _usageApiService.Dispose();
+        _credentialsService.Dispose();
         _popupForm.Dispose();
         Application.Exit();
     }
@@ -252,6 +253,7 @@ public class TrayApplicationContext : ApplicationContext
             _tooltipUpdateTimer.Dispose();
             _trayIcon.Dispose();
             _usageApiService.Dispose();
+            _credentialsService.Dispose();
             _popupForm.Dispose();
         }
         base.Dispose(disposing);

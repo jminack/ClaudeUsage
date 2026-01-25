@@ -28,17 +28,43 @@ public class UsageApiService : IDisposable
 
         if (_credentialsService.IsTokenExpired())
         {
-            // Try refreshing credentials from file (Claude Code may have refreshed them)
-            credentials = _credentialsService.GetCredentials(forceRefresh: true);
-            if (credentials == null || _credentialsService.IsTokenExpired())
+            // Try refreshing the token automatically
+            var refreshed = await _credentialsService.RefreshTokenAsync();
+            if (refreshed)
             {
-                throw new InvalidOperationException("Token expired. Please re-authenticate in Claude Code.");
+                credentials = _credentialsService.GetCredentials(forceRefresh: true);
             }
+            else
+            {
+                // Refresh failed - session may have expired server-side
+                throw new InvalidOperationException("Token expired and refresh failed. Please re-authenticate by running 'claude' in your terminal.");
+            }
+        }
+
+        if (credentials == null)
+        {
+            throw new InvalidOperationException("Failed to get credentials after refresh.");
         }
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.AccessToken);
 
         var response = await _httpClient.GetAsync(UsageEndpoint);
+
+        // Handle 401 by attempting token refresh
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            var refreshed = await _credentialsService.RefreshTokenAsync();
+            if (refreshed)
+            {
+                credentials = _credentialsService.GetCredentials(forceRefresh: true);
+                if (credentials != null)
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.AccessToken);
+                    response = await _httpClient.GetAsync(UsageEndpoint);
+                }
+            }
+        }
+
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
