@@ -42,3 +42,24 @@ Response includes `five_hour` and `seven_day` utilization percentages with reset
 ### Brand Colors
 
 Claude's signature terracotta: `#D97757` (RGB 217, 119, 87)
+
+## Code Style
+
+### Avoid `var` - Use Explicit Types
+
+Use explicit type declarations instead of `var`. This makes code readable without IDE assistance.
+
+```csharp
+// Preferred
+UsageResponse result = GetUsage();
+string name = "hello";
+
+// Avoid
+var result = GetUsage();
+var name = "hello";
+```
+
+**Exceptions** - `var` is acceptable when:
+- Complex LINQ results: `var grouped = items.GroupBy(x => x.Category)`
+- Anonymous types: `var x = new { Name = "test", Value = 1 }`
+- The type is verbose and visible on the same line: `var items = new Dictionary<string, List<int>>()`

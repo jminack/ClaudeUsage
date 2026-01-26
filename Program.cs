@@ -6,7 +6,7 @@ static class Program
     static void Main()
     {
         // Ensure only one instance runs
-        using var mutex = new Mutex(true, "ClaudeUsageWidget_SingleInstance", out bool createdNew);
+        using Mutex mutex = new Mutex(true, "ClaudeUsageWidget_SingleInstance", out bool createdNew);
         if (!createdNew)
         {
             MessageBox.Show("Claude Usage Widget is already running.", "Already Running", MessageBoxButtons.OK, MessageBoxIcon.Information);

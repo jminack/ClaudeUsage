@@ -20,7 +20,7 @@ public class UsageApiService : IDisposable
 
     public async Task<UsageResponse?> GetUsageAsync()
     {
-        var credentials = _credentialsService.GetCredentials();
+        ClaudeOAuth? credentials = _credentialsService.GetCredentials();
         if (credentials == null)
         {
             throw new InvalidOperationException("No credentials found. Please ensure Claude Code is authenticated.");
@@ -29,7 +29,7 @@ public class UsageApiService : IDisposable
         if (_credentialsService.IsTokenExpired())
         {
             // Try refreshing the token automatically
-            var refreshed = await _credentialsService.RefreshTokenAsync();
+            bool refreshed = await _credentialsService.RefreshTokenAsync();
             if (refreshed)
             {
                 credentials = _credentialsService.GetCredentials(forceRefresh: true);
@@ -48,12 +48,12 @@ public class UsageApiService : IDisposable
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", credentials.AccessToken);
 
-        var response = await _httpClient.GetAsync(UsageEndpoint);
+        HttpResponseMessage response = await _httpClient.GetAsync(UsageEndpoint);
 
         // Handle 401 by attempting token refresh
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            var refreshed = await _credentialsService.RefreshTokenAsync();
+            bool refreshed = await _credentialsService.RefreshTokenAsync();
             if (refreshed)
             {
                 credentials = _credentialsService.GetCredentials(forceRefresh: true);
@@ -67,7 +67,7 @@ public class UsageApiService : IDisposable
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<UsageResponse>(json);
     }
 

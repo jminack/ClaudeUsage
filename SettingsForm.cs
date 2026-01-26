@@ -30,10 +30,10 @@ public class SettingsForm : Form
         Size = new Size(350, 220);
         BackColor = Color.FromArgb(253, 250, 243);
 
-        var yPos = 20;
+        int yPos = 20;
 
         // Poll interval
-        var pollLabel = new Label
+        Label pollLabel = new Label
         {
             Text = "Poll interval (minutes):",
             Font = new Font("Segoe UI", 10),
@@ -54,7 +54,7 @@ public class SettingsForm : Form
         yPos += 40;
 
         // Alert threshold
-        var thresholdLabel = new Label
+        Label thresholdLabel = new Label
         {
             Text = "Alert threshold (%):",
             Font = new Font("Segoe UI", 10),
@@ -116,7 +116,7 @@ public class SettingsForm : Form
 
     private void LoadSettings()
     {
-        var settings = _settingsService.Settings;
+        Models.AppSettings settings = _settingsService.Settings;
         _pollIntervalInput.Value = settings.PollIntervalMinutes;
         _alertThresholdInput.Value = settings.AlertThresholdPercent;
         _alertEnabledCheckbox.Checked = settings.AlertEnabled;

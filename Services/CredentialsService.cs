@@ -19,7 +19,7 @@ public class CredentialsService : IDisposable
 
     public CredentialsService()
     {
-        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         _credentialsPath = Path.Combine(userProfile, ".claude", ".credentials.json");
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -39,8 +39,8 @@ public class CredentialsService : IDisposable
                 return null;
             }
 
-            var json = File.ReadAllText(_credentialsPath);
-            var credentialsFile = JsonSerializer.Deserialize<CredentialsFile>(json);
+            string json = File.ReadAllText(_credentialsPath);
+            CredentialsFile? credentialsFile = JsonSerializer.Deserialize<CredentialsFile>(json);
             _cachedCredentials = credentialsFile?.ClaudeAiOauth;
             _lastRead = DateTime.Now;
             return _cachedCredentials;
@@ -53,17 +53,17 @@ public class CredentialsService : IDisposable
 
     public bool IsTokenExpired()
     {
-        var credentials = GetCredentials();
+        ClaudeOAuth? credentials = GetCredentials();
         if (credentials == null) return true;
 
-        var expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(credentials.ExpiresAt);
+        DateTimeOffset expiresAt = DateTimeOffset.FromUnixTimeMilliseconds(credentials.ExpiresAt);
         // Consider expired if within 5 minutes of expiry to avoid edge cases
         return DateTimeOffset.Now >= expiresAt.AddMinutes(-5);
     }
 
     public async Task<bool> RefreshTokenAsync()
     {
-        var credentials = GetCredentials(forceRefresh: true);
+        ClaudeOAuth? credentials = GetCredentials(forceRefresh: true);
         if (credentials == null || string.IsNullOrEmpty(credentials.RefreshToken))
         {
             return false;
@@ -78,18 +78,18 @@ public class CredentialsService : IDisposable
                 client_id = ClientId
             };
 
-            var jsonContent = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            string jsonContent = JsonSerializer.Serialize(requestBody);
+            StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(TokenEndpoint, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(TokenEndpoint, content);
 
             if (!response.IsSuccessStatusCode)
             {
                 return false;
             }
 
-            var responseJson = await response.Content.ReadAsStringAsync();
-            var tokenResponse = JsonSerializer.Deserialize<TokenRefreshResponse>(responseJson);
+            string responseJson = await response.Content.ReadAsStringAsync();
+            TokenRefreshResponse? tokenResponse = JsonSerializer.Deserialize<TokenRefreshResponse>(responseJson);
 
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
@@ -123,16 +123,16 @@ public class CredentialsService : IDisposable
         try
         {
             // Read the existing file to preserve any other fields
-            var existingJson = await File.ReadAllTextAsync(_credentialsPath);
-            var credentialsFile = JsonSerializer.Deserialize<CredentialsFile>(existingJson) ?? new CredentialsFile();
+            string existingJson = await File.ReadAllTextAsync(_credentialsPath);
+            CredentialsFile credentialsFile = JsonSerializer.Deserialize<CredentialsFile>(existingJson) ?? new CredentialsFile();
 
             credentialsFile.ClaudeAiOauth = credentials;
 
-            var options = new JsonSerializerOptions
+            JsonSerializerOptions options = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
-            var newJson = JsonSerializer.Serialize(credentialsFile, options);
+            string newJson = JsonSerializer.Serialize(credentialsFile, options);
 
             await File.WriteAllTextAsync(_credentialsPath, newJson);
 

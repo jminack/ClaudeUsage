@@ -12,8 +12,8 @@ public class SettingsService
 
     public SettingsService()
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(appData, "ClaudeUsageWidget");
+        string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string appFolder = Path.Combine(appData, "ClaudeUsageWidget");
         Directory.CreateDirectory(appFolder);
         _settingsPath = Path.Combine(appFolder, "settings.json");
         _settings = Load();
@@ -27,7 +27,7 @@ public class SettingsService
         {
             if (File.Exists(_settingsPath))
             {
-                var json = File.ReadAllText(_settingsPath);
+                string json = File.ReadAllText(_settingsPath);
                 return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
         }
@@ -42,7 +42,7 @@ public class SettingsService
     {
         try
         {
-            var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+            string json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_settingsPath, json);
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }

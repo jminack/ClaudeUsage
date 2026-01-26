@@ -50,7 +50,7 @@ public class UsagePopupForm : Form
         Text = "Claude Usage";
         Padding = new Padding(20);
 
-        var yPos = 20;
+        int yPos = 20;
 
         // Title
         _titleLabel = new Label
@@ -64,8 +64,8 @@ public class UsagePopupForm : Form
         Controls.Add(_titleLabel);
 
         // Version label
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        var versionLabel = new Label
+        Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+        Label versionLabel = new Label
         {
             Text = $"v{version?.Major}.{version?.Minor}.{version?.Build}",
             Font = new Font("Segoe UI", 9),
@@ -141,7 +141,7 @@ public class UsagePopupForm : Form
         yPos += 28;
 
         // Separator
-        var separator1 = new Label
+        Label separator1 = new Label
         {
             BackColor = ClaudeProgressBg,
             Location = new Point(20, yPos),
@@ -265,17 +265,17 @@ public class UsagePopupForm : Form
         }
 
         // Session (5-hour window)
-        var sessionPercent = (int)(usage.FiveHour?.Utilization ?? 0);
+        int sessionPercent = (int)(usage.FiveHour?.Utilization ?? 0);
         _sessionProgress.Value = Math.Min(sessionPercent, 100);
         _sessionPercentLabel.Text = $"{sessionPercent}% used";
 
         if (usage.FiveHour?.ResetsAt != null)
         {
-            var timeUntilReset = usage.FiveHour.ResetsAt.Value - DateTimeOffset.Now;
+            TimeSpan timeUntilReset = usage.FiveHour.ResetsAt.Value - DateTimeOffset.Now;
             if (timeUntilReset.TotalMinutes > 0)
             {
-                var hours = (int)timeUntilReset.TotalHours;
-                var minutes = timeUntilReset.Minutes;
+                int hours = (int)timeUntilReset.TotalHours;
+                int minutes = timeUntilReset.Minutes;
                 _sessionResetLabel.Text = hours > 0
                     ? $"Resets in {hours} hr {minutes} min"
                     : $"Resets in {minutes} min";
@@ -287,25 +287,25 @@ public class UsagePopupForm : Form
         }
 
         // Weekly (7-day window)
-        var weeklyPercent = (int)(usage.SevenDay?.Utilization ?? 0);
+        int weeklyPercent = (int)(usage.SevenDay?.Utilization ?? 0);
         _weeklyProgress.Value = Math.Min(weeklyPercent, 100);
         _weeklyPercentLabel.Text = $"{weeklyPercent}% used";
 
         if (usage.SevenDay?.ResetsAt != null)
         {
-            var resetTime = usage.SevenDay.ResetsAt.Value.ToLocalTime();
+            DateTimeOffset resetTime = usage.SevenDay.ResetsAt.Value.ToLocalTime();
             _weeklyResetLabel.Text = $"Resets {resetTime:ddd h:mm tt}";
         }
 
         // Last updated
-        var timeSinceUpdate = DateTime.Now - _lastUpdated;
+        TimeSpan timeSinceUpdate = DateTime.Now - _lastUpdated;
         if (timeSinceUpdate.TotalMinutes < 1)
         {
             _lastUpdatedLabel.Text = "Last updated: Just now";
         }
         else if (timeSinceUpdate.TotalMinutes < 60)
         {
-            var mins = (int)timeSinceUpdate.TotalMinutes;
+            int mins = (int)timeSinceUpdate.TotalMinutes;
             _lastUpdatedLabel.Text = $"Last updated: {mins} minute{(mins == 1 ? "" : "s")} ago";
         }
         else
@@ -316,19 +316,19 @@ public class UsagePopupForm : Form
 
     private void SettingsButton_Click(object? sender, EventArgs e)
     {
-        using var settingsForm = new SettingsForm(_settingsService);
+        using SettingsForm settingsForm = new SettingsForm(_settingsService);
         settingsForm.ShowDialog(this);
     }
 
     public void ShowNearCursor()
     {
-        var cursorPos = Cursor.Position;
-        var screen = Screen.FromPoint(cursorPos);
-        var workingArea = screen.WorkingArea;
+        Point cursorPos = Cursor.Position;
+        Screen screen = Screen.FromPoint(cursorPos);
+        Rectangle workingArea = screen.WorkingArea;
 
         // Position near cursor but ensure it stays on screen
-        var x = cursorPos.X - Width / 2;
-        var y = cursorPos.Y - Height - 10;
+        int x = cursorPos.X - Width / 2;
+        int y = cursorPos.Y - Height - 10;
 
         // Adjust if off screen
         if (x < workingArea.Left) x = workingArea.Left;
@@ -375,26 +375,26 @@ public class ClaudeProgressBar : Control
 
     protected override void OnPaint(PaintEventArgs e)
     {
-        var g = e.Graphics;
+        Graphics g = e.Graphics;
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-        var rect = ClientRectangle;
-        var radius = rect.Height / 2;
+        Rectangle rect = ClientRectangle;
+        int radius = rect.Height / 2;
 
         // Draw background with rounded corners
-        using var bgPath = CreateRoundedRectPath(rect, radius);
-        using var bgBrush = new SolidBrush(_backgroundColor);
+        using System.Drawing.Drawing2D.GraphicsPath bgPath = CreateRoundedRectPath(rect, radius);
+        using SolidBrush bgBrush = new SolidBrush(_backgroundColor);
         g.FillPath(bgBrush, bgPath);
 
         // Draw progress with rounded corners
         if (_value > 0)
         {
-            var progressWidth = (int)((float)_value / _maximum * rect.Width);
+            int progressWidth = (int)((float)_value / _maximum * rect.Width);
             progressWidth = Math.Max(progressWidth, rect.Height); // Minimum width for rounded appearance
-            var progressRect = new Rectangle(rect.X, rect.Y, progressWidth, rect.Height);
+            Rectangle progressRect = new Rectangle(rect.X, rect.Y, progressWidth, rect.Height);
 
-            using var progressPath = CreateRoundedRectPath(progressRect, radius);
-            using var progressBrush = new SolidBrush(ForeColor);
+            using System.Drawing.Drawing2D.GraphicsPath progressPath = CreateRoundedRectPath(progressRect, radius);
+            using SolidBrush progressBrush = new SolidBrush(ForeColor);
             g.FillPath(progressBrush, progressPath);
         }
     }
@@ -402,7 +402,7 @@ public class ClaudeProgressBar : Control
     private static System.Drawing.Drawing2D.GraphicsPath CreateRoundedRectPath(Rectangle rect, int radius)
     {
         var path = new System.Drawing.Drawing2D.GraphicsPath();
-        var diameter = radius * 2;
+        int diameter = radius * 2;
 
         path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
         path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
