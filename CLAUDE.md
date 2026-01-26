@@ -11,8 +11,11 @@ dotnet build
 # Run
 dotnet run
 
-# Publish standalone exe
-dotnet publish -c Release -r win-x64 --self-contained false
+# Publish standalone exe (single file, ~146MB)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+
+# Build installer (requires NSIS: https://nsis.sourceforge.io)
+makensis installer\ClaudeUsageWidget.nsi
 ```
 
 ## Architecture

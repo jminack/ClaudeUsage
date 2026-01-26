@@ -49,7 +49,7 @@ Section "Claude Usage Widget (required)" SecMain
     SetOutPath "$INSTDIR"
 
     ; Install files
-    File "..\publish\ClaudeUsageWidget.exe"
+    File "..\bin\Release\net8.0-windows\win-x64\publish\ClaudeUsageWidget.exe"
 
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
