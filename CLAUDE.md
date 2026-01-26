@@ -9,10 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 dotnet build
 
 # Run
-dotnet run
+dotnet run --project ClaudeUsageWidget
 
 # Publish standalone exe (single file, ~146MB)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish ClaudeUsageWidget -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 
 # Build installer (requires NSIS: https://nsis.sourceforge.io)
 makensis installer\ClaudeUsageWidget.nsi
