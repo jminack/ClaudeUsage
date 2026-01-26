@@ -4,6 +4,7 @@ namespace ClaudeUsageWidget;
 
 public class SettingsForm : Form
 {
+    private const string LogSource = "SettingsForm";
     private readonly SettingsService _settingsService;
     private NumericUpDown _pollIntervalInput = null!;
     private NumericUpDown _alertThresholdInput = null!;
@@ -14,8 +15,10 @@ public class SettingsForm : Form
     public SettingsForm(SettingsService settingsService)
     {
         _settingsService = settingsService;
+        LoggingService.Debug(LogSource, "Creating SettingsForm");
         InitializeComponent();
         LoadSettings();
+        LoggingService.Debug(LogSource, "SettingsForm created");
     }
 
     private void InitializeComponent()
@@ -116,17 +119,21 @@ public class SettingsForm : Form
 
     private void LoadSettings()
     {
+        LoggingService.Debug(LogSource, "Loading settings into form");
         Models.AppSettings settings = _settingsService.Settings;
         _pollIntervalInput.Value = settings.PollIntervalMinutes;
         _alertThresholdInput.Value = settings.AlertThresholdPercent;
         _alertEnabledCheckbox.Checked = settings.AlertEnabled;
+        LoggingService.Debug(LogSource, $"Loaded: PollInterval={settings.PollIntervalMinutes}, AlertThreshold={settings.AlertThresholdPercent}, AlertEnabled={settings.AlertEnabled}");
     }
 
     private void SaveButton_Click(object? sender, EventArgs e)
     {
+        LoggingService.Info(LogSource, $"Saving settings: PollInterval={(int)_pollIntervalInput.Value}, AlertThreshold={(int)_alertThresholdInput.Value}, AlertEnabled={_alertEnabledCheckbox.Checked}");
         _settingsService.UpdatePollInterval((int)_pollIntervalInput.Value);
         _settingsService.UpdateAlertThreshold((int)_alertThresholdInput.Value);
         _settingsService.SetAlertEnabled(_alertEnabledCheckbox.Checked);
+        LoggingService.Debug(LogSource, "Settings saved, closing form");
         Close();
     }
 }

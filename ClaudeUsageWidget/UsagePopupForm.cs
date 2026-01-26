@@ -6,6 +6,8 @@ namespace ClaudeUsageWidget;
 
 public class UsagePopupForm : Form
 {
+    private const string LogSource = "UsagePopupForm";
+
     // Claude brand colors
     private static readonly Color ClaudeTerracotta = Color.FromArgb(217, 119, 87);
     private static readonly Color ClaudeCream = Color.FromArgb(255, 247, 237);      // Warm cream background
@@ -34,7 +36,9 @@ public class UsagePopupForm : Form
     public UsagePopupForm(SettingsService settingsService)
     {
         _settingsService = settingsService;
+        LoggingService.Debug(LogSource, "Creating UsagePopupForm");
         InitializeComponent();
+        LoggingService.Debug(LogSource, "UsagePopupForm created");
     }
 
     private void InitializeComponent()
@@ -251,11 +255,14 @@ public class UsagePopupForm : Form
 
     public void UpdateUsage(UsageResponse? usage, DateTime lastUpdated)
     {
+        LoggingService.Debug(LogSource, $"UpdateUsage called (usage={usage != null}, lastUpdated={lastUpdated:HH:mm:ss})");
+
         _usageData = usage;
         _lastUpdated = lastUpdated;
 
         if (usage == null)
         {
+            LoggingService.Debug(LogSource, "UpdateUsage: No usage data, showing error state");
             _sessionPercentLabel.Text = "Error";
             _weeklyPercentLabel.Text = "Error";
             _sessionProgress.Value = 0;
@@ -322,6 +329,8 @@ public class UsagePopupForm : Form
 
     public void ShowNearCursor()
     {
+        LoggingService.Debug(LogSource, "ShowNearCursor called");
+
         Point cursorPos = Cursor.Position;
         Screen screen = Screen.FromPoint(cursorPos);
         Rectangle workingArea = screen.WorkingArea;
@@ -337,6 +346,7 @@ public class UsagePopupForm : Form
         if (y + Height > workingArea.Bottom) y = workingArea.Bottom - Height;
 
         Location = new Point(x, y);
+        LoggingService.Debug(LogSource, $"Showing popup at ({x}, {y})");
         Show();
         Activate();
     }

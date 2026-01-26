@@ -11,12 +11,32 @@ dotnet build
 # Run
 dotnet run --project ClaudeUsageWidget
 
+# Run with logging enabled
+dotnet run --project ClaudeUsageWidget -- --log-level debug
+
 # Publish standalone exe (single file, ~146MB)
 dotnet publish ClaudeUsageWidget -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 
 # Build installer (requires NSIS: https://nsis.sourceforge.io)
 makensis installer\ClaudeUsageWidget.nsi
 ```
+
+## Release Process
+
+1. **Update version numbers** in:
+   - `ClaudeUsageWidget/ClaudeUsageWidget.csproj` (`Version`, `FileVersion`)
+   - `installer/ClaudeUsageWidget.nsi` (`VERSION`, `VIProductVersion`)
+
+2. **Build the installer**:
+   ```bash
+   dotnet publish ClaudeUsageWidget -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+   makensis installer\ClaudeUsageWidget.nsi
+   ```
+
+3. **Create GitHub release** (this also creates and pushes the tag):
+   ```bash
+   gh release create v1.x.x ClaudeUsageWidget-Setup.exe --title "v1.x.x" --notes "Release notes here"
+   ```
 
 ## Architecture
 
@@ -33,6 +53,7 @@ This is a Windows Forms system tray application that displays Claude Pro/Max sub
 - **CredentialsService** - Reads OAuth token from `~/.claude/.credentials.json` (created by Claude Code authentication)
 - **UsageApiService** - Calls `GET https://api.anthropic.com/api/oauth/usage` with OAuth bearer token
 - **SettingsService** - Persists user preferences to `%LOCALAPPDATA%/ClaudeUsageWidget/settings.json`
+- **LoggingService** - File-based logging with configurable levels, writes to `%LOCALAPPDATA%/ClaudeUsageWidget/logs/`
 
 ### API Integration
 
@@ -45,6 +66,32 @@ Response includes `five_hour` and `seven_day` utilization percentages with reset
 ### Brand Colors
 
 Claude's signature terracotta: `#D97757` (RGB 217, 119, 87)
+
+### Logging
+
+Enable logging via command-line parameter to troubleshoot issues:
+
+```bash
+# Run with debug logging (most verbose)
+ClaudeUsageWidget.exe --log-level debug
+
+# Run with info logging (recommended for troubleshooting)
+ClaudeUsageWidget.exe --log-level info
+
+# Run with warning logging
+ClaudeUsageWidget.exe --log-level warning
+
+# Run with error logging only
+ClaudeUsageWidget.exe --log-level error
+```
+
+Log files are written to `%LOCALAPPDATA%/ClaudeUsageWidget/logs/log-YYYY-MM-DD.txt` with date-stamped filenames.
+
+Log levels (from most to least verbose):
+- **Debug** - All operations including API responses, timer ticks, UI events
+- **Info** - Startup, API calls, errors, state changes
+- **Warning** - Potential issues that don't prevent operation
+- **Error** - Failures and exceptions only
 
 ## Code Style
 

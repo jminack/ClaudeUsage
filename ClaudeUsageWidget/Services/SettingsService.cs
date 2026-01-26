@@ -5,6 +5,7 @@ namespace ClaudeUsageWidget.Services;
 
 public class SettingsService
 {
+    private const string LogSource = "SettingsService";
     private readonly string _settingsPath;
     private AppSettings _settings;
 
@@ -16,6 +17,8 @@ public class SettingsService
         string appFolder = Path.Combine(appData, "ClaudeUsageWidget");
         Directory.CreateDirectory(appFolder);
         _settingsPath = Path.Combine(appFolder, "settings.json");
+
+        LoggingService.Info(LogSource, $"Settings path: {_settingsPath}");
         _settings = Load();
     }
 
@@ -23,49 +26,71 @@ public class SettingsService
 
     private AppSettings Load()
     {
+        LoggingService.Debug(LogSource, "Loading settings");
+
         try
         {
             if (File.Exists(_settingsPath))
             {
                 string json = File.ReadAllText(_settingsPath);
-                return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+                AppSettings? settings = JsonSerializer.Deserialize<AppSettings>(json);
+                if (settings != null)
+                {
+                    LoggingService.Info(LogSource, $"Settings loaded: PollInterval={settings.PollIntervalMinutes}min, AlertThreshold={settings.AlertThresholdPercent}%, AlertEnabled={settings.AlertEnabled}");
+                    return settings;
+                }
+            }
+            else
+            {
+                LoggingService.Info(LogSource, "Settings file not found, using defaults");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Return default settings on error
+            LoggingService.Exception(LogSource, ex, "Failed to load settings");
         }
-        return new AppSettings();
+
+        AppSettings defaults = new AppSettings();
+        LoggingService.Info(LogSource, $"Using default settings: PollInterval={defaults.PollIntervalMinutes}min, AlertThreshold={defaults.AlertThresholdPercent}%, AlertEnabled={defaults.AlertEnabled}");
+        return defaults;
     }
 
     public void Save()
     {
+        LoggingService.Debug(LogSource, "Saving settings");
+
         try
         {
             string json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_settingsPath, json);
+            LoggingService.Info(LogSource, "Settings saved successfully");
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail on save error
+            LoggingService.Exception(LogSource, ex, "Failed to save settings");
         }
     }
 
     public void UpdateAlertThreshold(int percent)
     {
-        _settings.AlertThresholdPercent = Math.Clamp(percent, 50, 100);
+        int clamped = Math.Clamp(percent, 50, 100);
+        LoggingService.Info(LogSource, $"Updating alert threshold: {_settings.AlertThresholdPercent}% -> {clamped}%");
+        _settings.AlertThresholdPercent = clamped;
         Save();
     }
 
     public void UpdatePollInterval(int minutes)
     {
-        _settings.PollIntervalMinutes = Math.Clamp(minutes, 1, 60);
+        int clamped = Math.Clamp(minutes, 1, 60);
+        LoggingService.Info(LogSource, $"Updating poll interval: {_settings.PollIntervalMinutes}min -> {clamped}min");
+        _settings.PollIntervalMinutes = clamped;
         Save();
     }
 
     public void SetAlertEnabled(bool enabled)
     {
+        LoggingService.Info(LogSource, $"Setting alert enabled: {_settings.AlertEnabled} -> {enabled}");
         _settings.AlertEnabled = enabled;
         Save();
     }
@@ -74,6 +99,7 @@ public class SettingsService
     {
         if (_settings.LastAlertResetTime != resetTime)
         {
+            LoggingService.Debug(LogSource, $"Resetting alert for new window (reset time: {resetTime})");
             _settings.AlertShownForCurrentWindow = false;
             _settings.LastAlertResetTime = resetTime;
             Save();
@@ -82,6 +108,7 @@ public class SettingsService
 
     public void MarkAlertShown()
     {
+        LoggingService.Debug(LogSource, "Marking alert as shown for current window");
         _settings.AlertShownForCurrentWindow = true;
         Save();
     }
