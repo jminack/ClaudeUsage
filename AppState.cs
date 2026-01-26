@@ -27,6 +27,8 @@ public class AppState : IDisposable
     public DateTime LastUpdated { get; set; }
     public bool IsRefreshing { get; set; }
 
+    private bool _disposed;
+
     public AppState()
     {
         // Initialize services
@@ -56,6 +58,9 @@ public class AppState : IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+
         PollTimer.Stop();
         TooltipUpdateTimer.Stop();
         PollTimer.Dispose();
