@@ -11,8 +11,8 @@ InstallDirRegKey HKLM "Software\ClaudeUsageWidget" "InstallDir"
 RequestExecutionLevel admin
 
 ; Version info
-!define VERSION "1.0.1"
-VIProductVersion "1.0.1.0"
+!define VERSION "1.0.2"
+VIProductVersion "1.0.2.0"
 VIAddVersionKey "ProductName" "Claude Usage Widget"
 VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "FileDescription" "Claude Usage Widget Installer"
